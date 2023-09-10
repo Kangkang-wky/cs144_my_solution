@@ -20,12 +20,19 @@ class TCPReceiver {
     //! The maximum number of bytes we'll store.
     size_t _capacity;
 
+    // syn fin 标志位进行置位操作
+    bool _set_syn = false;
+    bool _set_fin = false;
+    // isn seqno 初始化
+    WrappingInt32 _isn = WrappingInt32(0);
+
   public:
     //! \brief Construct a TCP receiver
     //!
     //! \param capacity the maximum number of bytes that the receiver will
     //!                 store in its buffers at any give time.
-    TCPReceiver(const size_t capacity) : _reassembler(capacity), _capacity(capacity) {}
+    TCPReceiver(const size_t capacity)
+        : _reassembler(capacity), _capacity(capacity), _set_syn(false), _set_fin(false), _isn(WrappingInt32(0)) {}
 
     //! \name Accessors to provide feedback to the remote TCPSender
     //!@{

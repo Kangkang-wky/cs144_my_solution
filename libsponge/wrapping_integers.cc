@@ -43,7 +43,9 @@ uint64_t unwrap(WrappingInt32 n, WrappingInt32 isn, uint64_t checkpoint) {
         uint64_t real_num = num + rank * (1l << 32);
         return real_num;
 
-    } else {
+    }
+    // checkpoint 本身在 32 位无符号数里面
+    else {
         return num;
     }
 }
