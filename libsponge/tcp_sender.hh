@@ -9,6 +9,47 @@
 #include <functional>
 #include <queue>
 
+// 构建一个 Timer 类, 用作定时器
+
+class Timer {
+  private:
+    uint64_t _init_RTO = 0;  // 指数退避
+    uint64_t _cur_RTO = 0;
+    uint64_t _elapsed_time = 0;  // 开始到现在的时间, 通过 tick 来更新
+    bool _running = false;       // 记录计时器是否开始
+
+  public:
+    Timer() {}
+    Timer(const uint64_t RTO) : _init_RTO(RTO), _cur_RTO(RTO) {}
+    // 计时器 start
+    void start() {
+        _elapsed_time = 0;
+        _running = true;
+    }
+
+    // 计时器停止
+    void stop() { _running = false; }
+
+    // 计时器重置
+    void reset() { _cur_RTO = _init_RTO; }
+
+    // 指数避退
+    void reset_double() { _cur_RTO *= 2; }
+
+    // 计时器 tick
+    void tick(const size_t ms_since_last_tick) {
+        if (check_running()) {
+            _elapsed_time += ms_since_last_tick;
+        }
+    }
+
+    // check expired
+    bool check_expired() const { return _running && (_elapsed_time >= _cur_RTO); }
+
+    // check running
+    bool check_running() const { return _running; }
+};
+
 //! \brief The "sender" part of a TCP implementation.
 
 //! Accepts a ByteStream, divides it up into segments and sends the
@@ -31,6 +72,22 @@ class TCPSender {
 
     //! the (absolute) sequence number for the next byte to be sent
     uint64_t _next_seqno{0};
+
+    // 定义一些自己写的成员变量
+    uint64_t _recv_ackno{0};
+    // 设置标志位
+    bool _set_syn = false;
+    bool _set_fin = false;
+    // 定时器设置
+    Timer _timer;
+    // 连续重传次数
+    uint64_t _consecutive_retransmissions_cnt{0};
+    // 窗口大小
+    uint64_t _window_size{1};
+    // 已经发送出去但是还未被 ack 确认的字节数
+    uint64_t _bytes_in_flight{0};
+    // 符合上述描述的 TCPSegment 字段, 保存那些没有被ack 确认的 TCPSegment
+    std::queue<TCPSegment> _segments_unackno{};
 
   public:
     //! Initialize a TCPSender
@@ -87,6 +144,9 @@ class TCPSender {
     //! \brief relative seqno for the next byte to be sent
     WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); }
     //!@}
+
+    // 将segment push 到 segment_out 中
+    bool push_segment(TCPSegment &segment, size_t &length);
 };
 
 #endif  // SPONGE_LIBSPONGE_TCP_SENDER_HH
