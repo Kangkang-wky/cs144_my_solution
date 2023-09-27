@@ -13,10 +13,10 @@
 
 class Timer {
   private:
-    uint64_t _init_RTO = 0;  // 指数退避
-    uint64_t _cur_RTO = 0;
-    uint64_t _elapsed_time = 0;  // 开始到现在的时间, 通过 tick 来更新
-    bool _running = false;       // 记录计时器是否开始
+    uint64_t _init_RTO = 0;      // 初始RTO
+    uint64_t _cur_RTO = 0;       // 指数避退的RTO
+    uint64_t _elapsed_time = 0;  // 定时器开始到现在的时间, 通过 tick 来更新
+    bool _running = false;       // 记录定时器是否开始
 
   public:
     Timer() {}
@@ -27,16 +27,16 @@ class Timer {
         _running = true;
     }
 
-    // 计时器停止
+    // 定时器停止
     void stop() { _running = false; }
 
-    // 计时器重置
+    // 定时器重置
     void reset() { _cur_RTO = _init_RTO; }
 
     // 指数避退
     void reset_double() { _cur_RTO *= 2; }
 
-    // 计时器 tick
+    // 定时器 tick
     void tick(const size_t ms_since_last_tick) {
         if (check_running()) {
             _elapsed_time += ms_since_last_tick;
@@ -75,7 +75,7 @@ class TCPSender {
 
     // 定义一些自己写的成员变量
     uint64_t _recv_ackno{0};
-    // 设置标志位
+    // 设置标志位记录是否为syn 或者 fin 状态
     bool _set_syn = false;
     bool _set_fin = false;
     // 定时器设置
@@ -83,10 +83,12 @@ class TCPSender {
     // 连续重传次数
     uint64_t _consecutive_retransmissions_cnt{0};
     // 窗口大小
+    // _window_size 初始化为 1，否则TCP 刚开始就丢包的话 _window_size = 0 只会认为接收方窗口为0, 不会做指数退避 RTO*2
     uint64_t _window_size{1};
-    // 已经发送出去但是还未被 ack 确认的字节数
+    // 已经发送出去但是还未被 ack 确认的字节数, 即 _segments_unackno 的字节数
     uint64_t _bytes_in_flight{0};
     // 符合上述描述的 TCPSegment 字段, 保存那些没有被ack 确认的 TCPSegment
+    // _segments_out 保存的是发送的 TCPsegment
     std::queue<TCPSegment> _segments_unackno{};
 
   public:
@@ -145,7 +147,7 @@ class TCPSender {
     WrappingInt32 next_seqno() const { return wrap(_next_seqno, _isn); }
     //!@}
 
-    // 将segment push 到 segment_out 中
+    // 组装好 TCPsegment push 到 segment_out 中
     bool push_segment(TCPSegment &segment, size_t &length);
 };
 
