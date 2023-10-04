@@ -181,3 +181,19 @@ void TCPSender::send_empty_segment() {
     segment.header().seqno = next_seqno();
     _segments_out.emplace(std::move(segment));
 }
+
+void TCPSender::send_empty_segment(bool SYN, bool FIN, bool RST) {
+    TCPSegment segment;
+    segment.header().seqno = next_seqno();
+    if (SYN) {
+        _set_syn = true;
+    }
+    if (FIN) {
+        _set_fin = true;
+    }
+    segment.header().syn = SYN;
+    segment.header().fin = FIN;
+    segment.header().rst = RST;
+    _next_seqno += segment.length_in_sequence_space();
+    _segments_out.emplace(std::move(segment));
+}

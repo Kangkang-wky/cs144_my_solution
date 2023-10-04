@@ -21,6 +21,12 @@ class TCPConnection {
     //! in case the remote TCPConnection doesn't know we've received its whole stream?
     bool _linger_after_streams_finish{true};
 
+    // 自定义的私有成员变量
+    // record the time
+    size_t _time_since_last_segment_received{0};
+
+    bool _is_active{true};
+
   public:
     //! \name "Input" interface for the writer
     //!@{
@@ -94,6 +100,23 @@ class TCPConnection {
     TCPConnection(const TCPConnection &other) = delete;
     TCPConnection &operator=(const TCPConnection &other) = delete;
     //!@}
+
+    // 自定义的成员函数
+    // sender 和 receiver 填充 TCP segment 并发送到 segment_out
+    void segment_assemble_send();
+
+    // 处理 clean shutdown 以及 unclean shutdown
+    // clean shutdown 置 active = false
+    // unclean shutdown 置 inbound outbound 为 error 以及以上 active
+    void set_shutdown(const bool is_clean);
+
+    // 处理需要发送设置 RST 标志位的情况
+    // : 一是重传次数太多, 二是TCP connection 析构的时候还处于 active
+
+    // 生成有 RST 标志位的 segment
+    // lab tutorial 建议使用 send_empty_segment 方法 强制生成一个具有适当序列号的空段
+    // 在 tcp_sender 中重载一下 send_empty_segment
+    void send_rst_segment();
 };
 
 #endif  // SPONGE_LIBSPONGE_TCP_FACTORED_HH

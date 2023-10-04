@@ -149,6 +149,9 @@ class TCPSender {
 
     // 组装好 TCPsegment push 到 segment_out 中
     bool push_segment(TCPSegment &segment, size_t &length);
+
+    // 为 lab4 重载 send_empty_segment
+    void send_empty_segment(bool SYN, bool FIN, bool RST);
 };
 
 #endif  // SPONGE_LIBSPONGE_TCP_SENDER_HH
