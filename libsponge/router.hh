@@ -5,6 +5,7 @@
 
 #include <optional>
 #include <queue>
+#include <set>
 
 //! \brief A wrapper for NetworkInterface that makes the host-side
 //! interface asynchronous: instead of returning received datagrams
@@ -56,6 +57,14 @@ class RouteEntry {
         , _next_hop(next_hop)
         , _interface_num(interface_num) {}
 
+    bool operator<(const RouteEntry &other) const {
+        if (_prefix_length != other._prefix_length)
+            return _prefix_length > other._prefix_length;
+        if (_route_prefix != other._route_prefix)
+            return _route_prefix < other._route_prefix;
+        return _interface_num < other._interface_num;
+    }
+
     uint32_t get_route_prefix() const { return _route_prefix; }
 
     uint8_t get_prefix_length() const { return _prefix_length; }
@@ -77,7 +86,7 @@ class Router {
     void route_one_datagram(InternetDatagram &dgram);
 
     //! 实现一个路由表
-    std::vector<RouteEntry> _route_table{};
+    std::set<RouteEntry> _route_table{};
 
   public:
     //! Add an interface to the router

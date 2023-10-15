@@ -31,7 +31,7 @@ void Router::add_route(const uint32_t route_prefix,
 
     // DUMMY_CODE(route_prefix, prefix_length, next_hop, interface_num);
     // Your code here.
-    _route_table.emplace_back(route_prefix, prefix_length, next_hop, interface_num);
+    _route_table.insert({route_prefix, prefix_length, next_hop, interface_num});
 }
 
 //! \param[in] dgram The datagram to be routed
