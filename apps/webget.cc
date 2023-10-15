@@ -1,9 +1,8 @@
-#include "socket.hh"
+#include "tcp_sponge_socket.hh"
 #include "util.hh"
 
 #include <cstdlib>
 #include <iostream>
-#include <sys/socket.h>
 
 using namespace std;
 
@@ -23,18 +22,20 @@ void get_URL(const string &host, const string &path) {
     // HTTP 头部的每一行末尾都以\r\n结尾, 而不是\n
     // HTTP 头部包含 close, 发送给远程服务器
 
-    TCPSocket sock;
+    FullStackSocket sock;
     sock.connect(Address(host, "http"));
     sock.write("GET " + path + " HTTP/1.1\r\n");
     sock.write("Host: " + host + "\r\n");
     sock.write("Connection: close\r\n");
     sock.write("\r\n");
-    sock.shutdown(SHUT_WR);
+    // sock.shutdown(SHUT_WR);
 
     while (!sock.eof()) {
         cout << sock.read();
     }
-    sock.close();
+    // sock.close();
+
+    sock.wait_until_closed();
 
     cerr << "Function called: get_URL(" << host << ", " << path << ").\n";
     // cerr << "Warning: get_URL() has not been implemented yet.\n";

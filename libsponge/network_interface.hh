@@ -29,8 +29,13 @@
 //! the network interface passes it up the stack. If it's an ARP
 //! request or reply, the network interface processes the frame
 //! and learns or replies as necessary.
+
+//  networinterface 完成网络层与链路层之间的转换
+//  主要是实现 send recv 以及 tick 三个函数接口
+
 class NetworkInterface {
   private:
+    // MAC 地址 IP 地址 以及存储以太网帧的队列
     //! Ethernet (known as hardware, network-access-layer, or link-layer) address of the interface
     EthernetAddress _ethernet_address;
 
@@ -39,6 +44,24 @@ class NetworkInterface {
 
     //! outbound queue of Ethernet frames that the NetworkInterface wants sent
     std::queue<EthernetFrame> _frames_out{};
+
+    // support datastruct
+
+    // ARP Cache 表
+    // IP address EthernetAddress TTL
+    std::unordered_map<uint32_t, std::pair<EthernetAddress, size_t>> _arp_table{};
+
+    // 正在查询的 ARP 报文
+    // IP address time
+    std::unordered_map<uint32_t, size_t> _arp_request_time{};
+
+    // 存储 发送的 MAC 地址未被确认的IP报文
+    std::unordered_map<uint32_t, std::vector<InternetDatagram>> _arp_wait_ipdata{};
+
+    // ARP Cache 表中, ARP ENTRY 有效时间 30s
+    static constexpr uint32_t ARP_ENTRY_TTL_MS = 30000;
+    // ARP 请求报文的默认等待时间 5s
+    static constexpr uint32_t ARP_REPLY_TTL_MS = 5000;
 
   public:
     //! \brief Construct a network interface with given Ethernet (network-access-layer) and IP (internet-layer) addresses
@@ -62,6 +85,10 @@ class NetworkInterface {
 
     //! \brief Called periodically when time elapses
     void tick(const size_t ms_since_last_tick);
+
+    // support function
+    //! \brief 组装 EthernetFrame 报文并将其发送
+    void push_datagram(const EthernetAddress &dst, const uint16_t type, BufferList &&payload);
 };
 
 #endif  // SPONGE_LIBSPONGE_NETWORK_INTERFACE_HH
