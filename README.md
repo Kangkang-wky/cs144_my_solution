@@ -1,5 +1,20 @@
 For build prereqs, see [the CS144 VM setup instructions](https://web.stanford.edu/class/cs144/vm_howto).
 
+## My solution of CS144
+
+- [x] lab0: warmup & webget
+- [x] lab1: stitching substrings into a byte stream
+- [x] lab2: TCP receiver(translate between 64-bit and 32-bit & tcp receiver function)
+- [x] lab3: TCP sender(tcp sender function) 
+- [x] lab4: TCP connection(tcp connection function & webget revisited)
+- [x] lab5: network interface(Address Resolution Protocol)
+- [x] lab6: IP router
+- [ ] lab7: putting it all together
+
+## check labs
+
+<img src="./images/check.png" width = "514" height = "493" alt="图片名称" align=center />
+
 ## Sponge quickstart
 
 To set up your build directory:
