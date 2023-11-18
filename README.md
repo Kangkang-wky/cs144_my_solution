@@ -9,7 +9,7 @@ For build prereqs, see [the CS144 VM setup instructions](https://web.stanford.ed
 - [x] lab4: TCP connection(tcp connection function & webget revisited)
 - [x] lab5: network interface(Address Resolution Protocol)
 - [x] lab6: IP router
-- [ ] lab7: putting it all together
+- [x] lab7: putting it all together
 
 ## check labs
 
